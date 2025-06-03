@@ -73,7 +73,7 @@ m.get_root().html.add_child(folium.Element(f"""
 m.get_root().html.add_child(folium.Element(f"""
 <div id='all-Pro' style='
     position: fixed;
-    bottom: 50px; left: 50px;
+    bottom: 50px; left: 20px;
     width: 180px; height: 30px;
     background-color: white;
     border: 2px solid #1d4b7f;
@@ -96,7 +96,7 @@ m.get_root().html.add_child(folium.Element(f"""
 m.get_root().html.add_child(folium.Element(f"""
 <div id='toggle-selected' style='
     position: fixed;
-    bottom: 50px; left: 250px;
+    bottom: 50px; left: 220px;
     width: 170px; height: 30px;
     background-color: white;
     border: 2px solid green;
