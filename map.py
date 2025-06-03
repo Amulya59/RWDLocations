@@ -16,8 +16,9 @@ for i, row in df.iterrows():
     is_selected = str(row.get('is_selected', '')).strip().upper() == "TRUE"
 
     # Choose icon
-    icon_size = (80, 50) if is_selected else (20, 30)
-    icon = folium.CustomIcon(icon_image=image, icon_size=icon_size)
+    icon_size = (80, 50) if (lat == 12.9086641) else (15, 20)
+    icon_image = image if (lat == 12.9086641) else ("we.png")
+    icon = folium.CustomIcon(icon_image=icon_image, icon_size=icon_size)
 
     # Tooltip
     tooltip = f"{name}, <br>Right Work Decor" if is_selected else None
@@ -29,23 +30,17 @@ for i, row in df.iterrows():
         <div style='font-weight: bold; font-size: 16px; margin-top: 10px; color: #1d4b7f;'>{name}</div>
         <div style='font-size: 14px; color: #555;'>{loc}</div>
     </div>
-    """
+    """ if is_selected else None
     popup = folium.Popup(popup_html, max_width=250)
 
     # Add marker
-    marker = folium.Marker(location=[lat, lon], icon=icon, tooltip=tooltip, popup=popup)
-    marker.add_to(m)
+    if is_selected or (lat == 12.9086641) :
+        marker = folium.Marker(location=[lat, lon], icon=icon, tooltip=tooltip, popup=popup)
+        marker.add_to(m)
+    else:
+        marker = folium.Marker(location=[lat, lon], icon=icon,)
+        marker.add_to(m)
 
-    # Add marker metadata for JavaScript
-    m.get_root().html.add_child(folium.Element(f"""
-    <script>
-        setTimeout(() => {{
-            var el = document.getElementsByClassName('leaflet-marker-icon')[{i}];
-            el.setAttribute('data-lat', '{lat}');
-            el.setAttribute('data-lon', '{lon}');
-        }}, 100);
-    </script>
-    """))
 
 # JavaScript: Save selected project info
 selected = df[df['is_selected'] == True]
@@ -60,12 +55,26 @@ for _, row in selected.iterrows():
 selected_js += "\n];\n</script>"
 m.get_root().html.add_child(folium.Element(selected_js))
 
+
+
+# Add marker metadata for JavaScript
+m.get_root().html.add_child(folium.Element(f"""
+<script>
+    setTimeout(() => {{
+    var el = document.getElementsByClassName('leaflet-marker-icon')[{i}];
+            el.setAttribute('data-lat', '{lat}');
+            el.setAttribute('data-lon', '{lon}');
+            el.setAttribute('data-selected', '{str(is_selected).lower()}');
+    }}, 100);
+</script>
+"""))
+
 # Add buttons for UI
 m.get_root().html.add_child(folium.Element(f"""
 <div id='all-Pro' style='
     position: fixed;
     bottom: 50px; left: 50px;
-    width: 150px; height: 30px;
+    width: 180px; height: 30px;
     background-color: white;
     border: 2px solid #1d4b7f;
     box-shadow: 0 0 0 3px #5da2d5;
@@ -80,14 +89,14 @@ m.get_root().html.add_child(folium.Element(f"""
     justify-content: center;
     cursor: pointer;
 '>
-    Total Projects : {len(df) - 1}
+    Locations covered : {len(df) - 1}
 </div>
 """))
 
 m.get_root().html.add_child(folium.Element(f"""
 <div id='toggle-selected' style='
     position: fixed;
-    bottom: 50px; left: 220px;
+    bottom: 50px; left: 250px;
     width: 170px; height: 30px;
     background-color: white;
     border: 2px solid green;
@@ -103,7 +112,7 @@ m.get_root().html.add_child(folium.Element(f"""
     justify-content: center;
     cursor: pointer;
 '>
-    Selected Projects : {len(selected)}
+    Selected Projects : {len(selected)-1}
 </div>
 """))
 
@@ -116,12 +125,9 @@ document.getElementById('toggle-selected').addEventListener('click', function() 
         let marker = markers[i];
         let lat = parseFloat(marker.getAttribute('data-lat'));
         let lon = parseFloat(marker.getAttribute('data-lon'));
+        let is_selected = marker.getAttribute('data-selected') === 'true';
 
-        let match = selectedProjects.find(p =>
-            Math.abs(p.lat - lat) < 0.0001 && Math.abs(p.lon - lon) < 0.0001
-        );
-
-        if (match) {
+        if (is_selected) && lat == 12.9086641 {
             marker.style.opacity = '1';
             marker.setAttribute('src', match.image);
             marker.title = match.name;
